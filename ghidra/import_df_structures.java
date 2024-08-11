@@ -895,6 +895,19 @@ public class import_df_structures extends GhidraScript {
 		public final List<SymbolTable> tables = new ArrayList<>();
 
 		public SymbolTable findTable(Program currentProgram) throws Exception {
+			var actualMD5 = currentProgram.getExecutableMD5();
+			if (actualMD5 == null) {
+				actualMD5 = "";
+			}
+
+			if (currentProgram.getExecutableFormat().equals("Executable and Linking Format (ELF)")) {
+				for (var table : tables) {
+					if (table.hasMD5Hash && table.md5Hash.equalsIgnoreCase(actualMD5)) {
+						return table;
+					}
+				}
+			}
+
 			long actualTS = 0;
 			if (currentProgram.getExecutableFormat().equals("Portable Executable (PE)")) {
 				// TODO: is there a *good* way to do this with Ghidra APIs?
@@ -925,10 +938,6 @@ public class import_df_structures extends GhidraScript {
 						break;
 					}
 				}
-			}
-			var actualMD5 = currentProgram.getExecutableMD5();
-			if (actualMD5 == null) {
-				actualMD5 = "";
 			}
 
 			for (var table : tables) {
