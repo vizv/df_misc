@@ -156,6 +156,7 @@ public class import_df_structures extends GhidraScript {
 	}
 
 	private DataType createVariantType(DataType target) throws Exception {
+		// XXX: use raw
 		if (target == null)
 			target = DataType.DEFAULT;
 		if (BooleanDataType.dataType.isEquivalent(target))
@@ -962,6 +963,8 @@ public class import_df_structures extends GhidraScript {
 			public String mangledName;
 			public boolean hasOffset;
 			public long offset;
+			public boolean hasBase;
+			public String base;
 		}
 
 		public static class GlobalAddress extends NameValueHaver {
@@ -1255,6 +1258,11 @@ public class import_df_structures extends GhidraScript {
 							vta.hasMangledName = true;
 							vta.mangledName = reader.getAttributeValue(i);
 							break;
+						case "base":
+							vta = (SymbolTable.VTableAddress) stack.peek();
+							vta.hasBase = true;
+							vta.base = reader.getAttributeValue(i);
+							break;
 						default:
 							printerr("Unhandled XML attribute name: " + reader.getAttributeLocalName(i));
 							continue;
@@ -1509,7 +1517,7 @@ public class import_df_structures extends GhidraScript {
 			case "stl-shared-ptr":
 				return createSharedPtrType(f.item == null ? null : getDataType(f.item));
 			case "stl-weak-ptr":
-				return createSharedPtrType(f.item == null ? null : getDataType(f.item));
+				return createWeakPtrType(f.item == null ? null : getDataType(f.item));
 			case "stl-function":
 				return createFunctionType(f.item == null ? null : getDataType(f.item));
 			case "stl-set":
@@ -2113,7 +2121,8 @@ public class import_df_structures extends GhidraScript {
 
 			long offset = vt.hasOffset ? vt.offset : 0;
 
-			if (vt.hasValue) {
+			if (vt.hasValue && !vt.hasBase) {
+				println("!!! labelling " + vt.name + "...");
 				labelVTable(ns, toAddr(vt.value + offset), cls, dt);
 			}
 
