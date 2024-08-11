@@ -458,22 +458,16 @@ public class import_df_structures extends GhidraScript {
 			this.dtULong = createDataType(dtcStd, "ulong",
 					AbstractIntegerDataType.getUnsignedDataType(currentProgram.getDefaultPointerSize(), dtm));
 
-			var rep = new StructureDataType("_string_rep", 0);
-			rep.setToDefaultAligned();
-			rep.setPackingEnabled(true);
-			rep.add(dtSizeT, "_M_length", null);
-			rep.add(dtSizeT, "_M_capacity", null);
-			rep.add(dtInt, "_M_refcount", null);
-			createDataType(dtcStd, rep);
+			var sso = new UnionDataType("_string_sso");
+			sso.setToDefaultAligned();
+			sso.setPackingEnabled(true);
+			sso.add(createArrayDataType(CharDataType.dataType, 16, null));
+			sso.add(dtSizeT, "_M_allocated_capacity", null);
+			createDataType(dtcStd, sso);
 
-			var dataPlus = new UnionDataType("_string_dataplus");
-			dataPlus.setToDefaultAligned();
-			dataPlus.setPackingEnabled(true);
-			dataPlus.add(dtm.getPointer(rep));
-			dataPlus.add(dtm.getPointer(TerminatedStringDataType.dataType));
-			createDataType(dtcStd, dataPlus);
-
-			stringDataType.add(dataPlus, "_M_p", null);
+			stringDataType.add(dtm.getPointer(CharDataType.dataType), "_M_p", null);
+			stringDataType.add(dtSizeT, "_M_string_length", null);
+			stringDataType.add(sso, "_sso", null);
 
 			var biterator = new StructureDataType("_bit_iterator", 0);
 			biterator.setToDefaultAligned();
