@@ -2265,13 +2265,13 @@ public class import_df_structures extends GhidraScript {
 		// ensure external libraries are attached to files
 		for (var libName : em.getExternalLibraryNames()) {
 			if (em.getExternalLibraryPath(libName) == null) {
-				if (libName.equals("libgraphics.so")) {
+				if (libName.equals("libg_src_lib.so")) {
 					var libGraphicsFile = currentProgram.getDomainFile().getParent().getFile(libName);
 					if (libGraphicsFile != null) {
-						println("attaching libgraphics.so external location");
+						println("attaching libg_src_lib.so external location");
 						em.setExternalPath(libName, libGraphicsFile.getPathname(), false);
 					} else {
-						printerr("could not find libgraphics.so in the same folder as this program!");
+						printerr("could not find libg_src_lib.so in the same folder as this program!");
 					}
 				} else if (!libName.equals(Library.UNKNOWN)) {
 					var locations = new ArrayList<String>();
